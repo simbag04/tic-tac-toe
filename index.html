@@ -10,47 +10,55 @@
 <body>
     <script src="script.js" defer></script>
     <div class="header">Tic Tac Toe</div>
-    <div class="main">
-        <div class="score-keeper">
-            <div class="p1"></div>
-            <div class="p2"></div>
-        </div>
-        <div class="board">
+    <div class="content">
+        <div class="main">
+            <div class="score-keeper">
+                <div class="p1 score"></div>
+                <div class="p2 score"></div>
+            </div>
+            <div class="winner"></div>
+            <div class="board">
+    
+            </div>
+
+            <div class="buttons">
+                <button class="start-over">Start Over</button>
+                <button class="reset">New Round</button>
+            </div>
 
         </div>
-        <button class="reset">New Round</button>
-        <button class="start-over">Start Over</button>
+    
+        <div class="start-game">
+            <p>Welcome to Tic Tac Toe!</p>
+            <form action="POST">
+                <ul>
+                    <li>
+                        <label for="p1-name">Player 1 Name:</label>
+                        <input id="p1-name" type="text" value="Player One" required>
+                    </li>
+        
+                    <li>
+                        <label for="p1-marker">Player 1 Marker:</label>
+                        <input id="p1-marker" type="text" minlength="1" maxlength = "1" value="X" required>
+                    </li>
+        
+                    <li>
+                        <label for="p2-name">Player 2 Name:</label>
+                        <input id="p2-name" type="text" value="Player Two" required>
+                    </li>
+                    
+                    <li>
+                        <label for="p2-marker">Player 2 Marker:</label>
+                        <input id="p2-marker" type="text" minlength="1" maxlength = "1" value="O" required>
+                    </li>
+                </ul>
+    
+    
+                <button type="submit">Let's Play!</button>
+            </form>
+        </div>
     </div>
 
-    <div class="start-game">
-        <p>Welcome to Tic Tac Toe!</p>
-        <form action="POST">
-            <ul>
-                <li>
-                    <label for="p1-name">Player 1 Name:</label>
-                    <input id="p1-name" type="text" value="Player One" required>
-                </li>
-    
-                <li>
-                    <label for="p1-marker">Player 1 Marker:</label>
-                    <input id="p1-marker" type="text" minlength="1" maxlength = "1" value="X" required>
-                </li>
-    
-                <li>
-                    <label for="p2-name">Player 2 Name:</label>
-                    <input id="p2-name" type="text" value="Player Two" required>
-                </li>
-                
-                <li>
-                    <label for="p2-marker">Player 2 Marker:</label>
-                    <input id="p2-marker" type="text" minlength="1" maxlength = "1" value="O" required>
-                </li>
-            </ul>
-
-
-            <button type="submit">Let's Play!</button>
-        </form>
-    </div>
 
 </body>
 </html>

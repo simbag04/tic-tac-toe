@@ -31,6 +31,8 @@ let Cell = () => {
 let Player = (name, marker) => {
 
     let score = 0;
+
+    // getter methods
     const getName = () => {
         return name;
     }
@@ -43,6 +45,7 @@ let Player = (name, marker) => {
         return score;
     }
 
+    // method to increment score when there's a win
     const updateScore = () => {
         score++;
     }
@@ -109,7 +112,11 @@ let gameboard = (() => {
     }
 
     // checks if winner exists
+    // returns null if no winner/tie, 0 if tie, winner if winner exists
     const winnerExists = () => {
+
+        // checks for tie
+        let cellsFilled = true;
 
         // check rows/cols
         for (let i = 0; i < 3; i++)
@@ -119,19 +126,26 @@ let gameboard = (() => {
 
             let colFound = true;
             let colFirst = board[0][i].getPlayer();
+
             for (let j = 0; j < 3; j++)
             {
-                if (board[i][j] === null || board[i][j].getPlayer() !== rowFirst)
+                // check for tie
+                if (board[i][j].getPlayer() === null) cellsFilled = false;
+
+                // check for current row having winner
+                if (board[i][j].getPlayer() === null || board[i][j].getPlayer() !== rowFirst)
                 {
                     rowFound = false;
                 }
 
-                if (board[j][i] === null || board[j][i].getPlayer() !== colFirst)
+                // check for current col having winner
+                if (board[j][i].getPlayer() === null || board[j][i].getPlayer() !== colFirst)
                 {
                     colFound = false;
                 }
             }
 
+            // returns if found
             if (rowFound)
             {
                 winner = rowFirst;
@@ -153,12 +167,12 @@ let gameboard = (() => {
 
         for (let i = 0; i < 3; i++)
         {
-            if (board[i][i] === null || board[i][i].getPlayer() !== negDiagFirst)
+            if (board[i][i].getPlayer() === null || board[i][i].getPlayer() !== negDiagFirst)
             {
                 negDiagFound = false;
             }
 
-            if (board[i][2 - i] === null || board[i][2-i].getPlayer() !== posDiagFirst)
+            if (board[i][2 - i].getPlayer() === null || board[i][2-i].getPlayer() !== posDiagFirst)
             {
                 posDiagFound = false;
             }
@@ -174,6 +188,11 @@ let gameboard = (() => {
             winner = posDiagFirst;
             return posDiagFirst;
         }
+        else if (cellsFilled)
+        {
+            winner = 0;
+            return 0;
+        }
         return null;
     }
 
@@ -184,32 +203,23 @@ let gameboard = (() => {
 // module to handle display of board on screen
 let displayHandler = (() => {
 
-    // current board
+    // current board and players
     let board = gameboard.getBoard();
-
-    // DOM elements
-    let htmlBoard = document.querySelector(".board");
-    let resetButton = document.querySelector(".main button");
-    let startOverButton = document.querySelector(".start-over")
-    let playerOneDiv = document.querySelector(".score-keeper .p1");
-    let playerTwoDiv = document.querySelector(".score-keeper .p2");
-    let form = document.querySelector("form");
-    let main = document.querySelector(".main");
-    let startMenu = document.querySelector(".start-game");
     let p1 = null;
     let p2 = null;
 
-    
+    // DOM elements
+    let htmlBoard = document.querySelector(".board");
+    let resetButton = document.querySelector(".reset");
+    let startOverButton = document.querySelector(".start-over")
+    let playerOneDiv = document.querySelector(".score-keeper .p1");
+    let playerTwoDiv = document.querySelector(".score-keeper .p2");
+    let winnerDiv = document.querySelector(".winner");
+    let form = document.querySelector("form");
+    let main = document.querySelector(".main");
+    let startMenu = document.querySelector(".start-game");
 
-    // renders HTML on page
-    const renderBoard = (player) => {
-        board = gameboard.getBoard();
-        updateDOM();
-        setScoreKeeper();
-        resetStyle();
-        styleScoreKeeper(player);
-    }
-
+    // all event listeners
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
@@ -233,25 +243,97 @@ let displayHandler = (() => {
 
     })
 
-    // method to initialize buttons
-    const addButtonHandlers = () => {
-        resetButton.addEventListener('click', () => {
-            gameController.newRound();
-        })
+    resetButton.addEventListener('click', () => {
+        gameController.newRound();
+    })
 
-        startOverButton.addEventListener('click', () => {
-            main.style['visibility'] = 'hidden';
-            startMenu.style['visibility'] = 'visible';
-        })
+    startOverButton.addEventListener('click', () => {
+        main.style['visibility'] = 'hidden';
+        startMenu.style['visibility'] = 'visible';
+    })
 
-
+    // main method that renders and styles ALL HTML on page
+    const renderBoard = (player) => {
+        board = gameboard.getBoard();
+        updateBoard();
+        setScoreKeeper();
+        resetStyle();
+        styleScoreKeeper(player);
+        setWinnerDiv();
     }
 
+    // helper methods
+
+    // helper method to set score keeper content
     const setScoreKeeper = () => {
         playerOneDiv.textContent = p1.getName() + " (" + p1.getMarker() + ") : " + p1.getScore();
         playerTwoDiv.textContent = p2.getName() + " (" + p2.getMarker() + ") : " + p2.getScore();
     }
 
+    // helper method to set result div
+    const setWinnerDiv = () => {
+        let winner = gameboard.getWinner();
+        let content = "Result: ";
+        if (winner === 0)
+        {
+            content += "Tie!"
+        }
+        else if (winner !== null)
+        {
+            content += winner.getName() + " wins!";
+        }
+        winnerDiv.textContent = content;
+    }
+
+    // helper method to update board
+    const updateBoard = () =>
+    {
+        // reset HTML
+        htmlBoard.innerHTML = "";
+        for (let i = 0; i < 3; i++)
+        {
+            // add rows for board
+            let row = document.createElement('div');
+            row.classList.add("row");
+            row.classList.add(i.toString());
+
+            for (let j = 0; j < 3; j++)
+            {
+                // add cols for board
+                let col = document.createElement('div');
+                col.classList.add("col");
+                col.classList.add(j.toString());
+
+                // set text content for cell
+                let player = board[i][j].getPlayer();
+                if (player === null)
+                {
+                    col.classList.add("unclicked");
+                    col.textContent = '';
+                }
+                else
+                {
+                    col.classList.add("clicked");
+                    col.textContent = player.getMarker();
+                }
+
+                // col.textContent = player == null ? '' : player.getMarker();
+
+                // add event listener for cell
+                col.addEventListener('click', () => {
+                    gameController.playTurn(i, j);
+                })
+
+                // append to row
+                row.appendChild(col);
+            }
+
+            // append row to board
+            htmlBoard.appendChild(row);
+        }
+    }
+
+    // all styling methods
     const styleScoreKeeper = (player) => {
         let winner = gameboard.getWinner();
 
@@ -264,6 +346,10 @@ let displayHandler = (() => {
         {
             styleWin(playerTwoDiv, playerOneDiv);
         }
+        else if (winner === 0)
+        {
+            resetStyle();
+        }
 
         else if (player === p1)
         {
@@ -274,69 +360,42 @@ let displayHandler = (() => {
 
     }
 
+    // styling helper methods
     const styleWin = (div, otherDiv) =>
     {
-        div.style['background-color'] = "green";
-        otherDiv.style['background-color'] = "red";
+        div.style['background-color'] = "#7AC74F";
+        otherDiv.style['background-color'] = "#E87461";
     }
 
     const styleActivePlayer = (div, otherDiv) => {
-        div.style['border'] = "2px solid black";
-        otherDiv.style['border'] = "none";
+        div.style['background-color'] = "#F49D37";
+        div.style['box-shadow'] = "0px 0px 10px black"
+        otherDiv.style['background-color'] = "#FFEED6";
+        otherDiv.style['box-shadow'] = "none";
     }
 
     const resetStyle = () => {
-        playerOneDiv.style['background-color'] = "white";
-        playerOneDiv.style['border'] = "none";
+        playerOneDiv.style['background-color'] = "#FFEED6";
+        playerOneDiv.style['box-shadow'] = "none";
 
-        playerTwoDiv.style['background-color'] = "white";
-        playerTwoDiv.style['border'] = "none";
+        playerTwoDiv.style['background-color'] = "#FFEED6";
+        playerTwoDiv.style['box-shadow'] = "none";
     }
 
-
-    // helper method to update DOM
-    const updateDOM = () =>
-    {
-        htmlBoard.innerHTML = "";
-        for (let i = 0; i < 3; i++)
-        {
-            let row = document.createElement('div');
-            row.classList.add("row");
-            row.classList.add(i.toString());
-            for (let j = 0; j < 3; j++)
-            {
-                let col = document.createElement('div');
-                col.classList.add("col");
-                col.classList.add(j.toString());
-                let player = board[i][j].getPlayer();
-                col.textContent = player == null ? '' : player.getMarker();
-
-                col.addEventListener('click', () => {
-                    gameController.playTurn(i, j);
-                })
-                row.appendChild(col);
-            }
-            htmlBoard.appendChild(row);
-        }
-    }
-
-    return {addButtonHandlers, renderBoard};
+    return {renderBoard};
 
 })();
 
 
+// module to handle control of game
 let gameController = (() => {
+
     let currentPlayer = null;
     let player1 = null;
     let player2 = null;
 
     // initializes new game
     const initializeGame = (p1, p2) => {
-        newGame(p1, p2);
-        displayHandler.addButtonHandlers();
-    }
-
-    const newGame = (p1, p2) => {
         currentPlayer = p1;
         player1 = p1;
         player2 = p2;
@@ -351,6 +410,11 @@ let gameController = (() => {
         displayHandler.renderBoard(currentPlayer);
     }
 
+    // resets player
+    const resetPlayer = () => {
+        currentPlayer = player1;
+    }
+
     // plays a turn
     const playTurn = (row, col) => 
     {
@@ -359,16 +423,11 @@ let gameController = (() => {
         {
             currentPlayer = currentPlayer === player1 ? player2 : player1;
             winner = gameboard.winnerExists();
-            if (winner !== null) winner.updateScore();
+            if (winner !== null && winner !== 0) winner.updateScore();
             displayHandler.renderBoard(currentPlayer);
 
         }
 
-    }
-
-    // resets player
-    const resetPlayer = () => {
-        currentPlayer = player1;
     }
 
     // gets current player
@@ -376,7 +435,7 @@ let gameController = (() => {
         return currentPlayer;
     }
 
-    return {initializeGame, newGame, newRound, playTurn, resetPlayer, getCurrentPlayer};
+    return {initializeGame, newRound, playTurn, resetPlayer, getCurrentPlayer};
 
 })();
 
